@@ -11,6 +11,13 @@ pip install -r requirements.txt
 ./manage.py migrate
 ```
 
+Create superuser
+----
+
+```bash
+./manage.py createsuperuser
+```
+
 Run server
 ----
 
