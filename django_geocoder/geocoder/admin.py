@@ -13,13 +13,13 @@ class AddressInline(admin.TabularInline):
 
 
 class RequestAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'first_address', 'address_count')
+    # list_display = ('created_at', 'first_address', 'address_count')
     inlines = (AddressInline,)
 
 
 class GeoInline(admin.TabularInline):
     model = Geo
-    readonly_fields = ('status', 'provider', 'latitude', 'longitude')
+    # readonly_fields = ('status', 'provider', 'latitude', 'longitude')
 
     def has_add_permission(self, request):
         return False
@@ -29,7 +29,7 @@ class GeoInline(admin.TabularInline):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('text', 'request')
+    list_display = ('text', 'yandex_coordinates', 'google_coordinates', 'osm_coordinates')
     inlines = (GeoInline,)
 
 

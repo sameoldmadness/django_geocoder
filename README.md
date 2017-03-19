@@ -32,11 +32,11 @@ TODO
 
 - catch api errors (and record failed responses)
 - set up cron job
-- run command from interface
 - exclude exausted providers
-- add osm
 - test yandex and google keys
 - squash migrations
 - remove gui restrictions
 - add columns settings
-- add filter by error
+- smth wrong with oss coords
+- save full text string
+- RecursionError at /admin/geocoder/address/14/change/

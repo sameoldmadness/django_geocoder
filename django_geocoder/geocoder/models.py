@@ -1,5 +1,4 @@
 from django.db import models
-# from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
 
@@ -25,20 +24,17 @@ class Request(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     addresses = models.TextField()
 
-    @property
-    def address_list(self):
-        return self.addresses.splitlines()
+    # def address_list(self):
+    #     return self.addresses.splitlines()
 
-    @property
-    def first_address(self):
-        return self.address_list[0]
+    # def first_address(self):
+    #     return self.address_list[0]
 
-    @property
-    def address_count(self):
-        return len(self.address_list)
+    # def address_count(self):
+    #     return len(self.address_list)
 
-    def __str__(self):
-        return '{}: {} (total: {})'.format(self.created_at, self.first_address, self.address_count)
+    # def __str__(self):
+    #     return '{}: {} (total: {})'.format(self.created_at, self.first_address, self.address_count)
 
 
 @receiver(models.signals.post_save, sender=Request)
@@ -61,6 +57,23 @@ def create_addresses_for_request(sender, instance, **kwargs):
 class Address(models.Model):
     text = models.CharField(max_length=200)
     request = models.ForeignKey('Request', on_delete=models.CASCADE)
+
+    def _coordinates_by_vendor(self, vendor):
+        geo = self.geo_set.filter(provider__vendor=vendor)
+
+        return (geo[0].latitude, geo[0].longitude) if len(geo) else None
+
+    def yandex_coordinates(self):
+        return self._coordinates_by_vendor(Provider.YANDEX)
+    yandex_coordinates.short_description = 'Yandex'
+
+    def google_coordinates(self):
+        return self._coordinates_by_vendor(Provider.GOOGLE)
+    google_coordinates.short_description = 'Google'
+
+    def osm_coordinates(self):
+        return self._coordinates_by_vendor(Provider.OSM)
+    osm_coordinates.short_description = 'OSM'
 
     def __str__(self):
         return self.text
