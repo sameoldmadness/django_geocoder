@@ -38,7 +38,7 @@ class Api:
                 'Response does not contain JSON',
                 {'params': params,
                  'response': response.text})
-        except KeyError as e:
+        except (KeyError, TypeError) as e:
             raise UnexpectedJsonStructure(
                 'Cannot find given key in JSON',
                 {'params': params,
@@ -51,7 +51,7 @@ class Api:
         if provider.vendor == Provider.YANDEX:
             return YandexApi(key=provider.key)
         if provider.vendor == Provider.GOOGLE:
-            return YandexApi(key=provider.key)
+            return GoogleApi(key=provider.key)
         if provider.vendor == Provider.OSM:
             return OpenStreetMapApi(key=provider.key)
         raise NotImplemented('Unknown provider: {}'.format(provider.key))
@@ -67,8 +67,8 @@ class YandexApi(Api):
         return params
 
     def _extract_from_json(self, json_data):
-        latitude, longitude = json_data \
-            ['response2']['GeoObjectCollection']['featureMember'][0] \
+        longitude, latitude = json_data \
+            ['response']['GeoObjectCollection']['featureMember'][0] \
             ['GeoObject']['Point']['pos'].split()
         return { 'latitude': latitude, 'longitude': longitude }
 
@@ -83,7 +83,7 @@ class GoogleApi(Api):
         return params
 
     def _extract_from_json(self, json_data):
-        location = json_data['results']['geometry']['location']
+        location = json_data['results'][0]['geometry']['location']
         return { 'latitude': location['lat'], 'longitude': location['lng'] }
 
 

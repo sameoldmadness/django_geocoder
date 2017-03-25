@@ -5,21 +5,30 @@ from .models import (
 )
 
 class ProviderAdmin(admin.ModelAdmin):
-    list_display = ('vendor', 'daily_request_limit')
+    list_display = ('vendor', 'is_drained')
 
 
 class AddressInline(admin.TabularInline):
     model = Address
+    readonly_fields = ('text', 'yandex_coordinates', 'google_coordinates', 'osm_coordinates')
+    show_change_link = True
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class RequestAdmin(admin.ModelAdmin):
-    # list_display = ('created_at', 'first_address', 'address_count')
+    list_display = ('created_at', 'address_count')
     inlines = (AddressInline,)
 
 
 class GeoInline(admin.TabularInline):
     model = Geo
-    # readonly_fields = ('status', 'provider', 'latitude', 'longitude')
+    readonly_fields = ('provider', 'status', 'latitude', 'longitude')
+    show_change_link = True
 
     def has_add_permission(self, request):
         return False
@@ -29,12 +38,12 @@ class GeoInline(admin.TabularInline):
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('text', 'yandex_coordinates', 'google_coordinates', 'osm_coordinates')
+    list_display = ('created_at', 'text', 'yandex_coordinates', 'google_coordinates', 'osm_coordinates')
     inlines = (GeoInline,)
 
 
 class GeoAdmin(admin.ModelAdmin):
-    list_display = ('status', 'provider', 'latitude', 'longitude')
+    list_display = ('created_at', 'status', 'provider', 'latitude', 'longitude')
 
 
 admin.site.register(Provider, ProviderAdmin)
