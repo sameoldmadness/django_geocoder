@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 from geocoder.models import Geo
-from geocoder.services.api import Api
+from geocoder.services.api import Api, ApiError
 
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
@@ -13,14 +13,14 @@ class Command(BaseCommand):
         for geo in geo_items:
             self._ok(geo.address)
             api = Api.withProvider(geo.provider)
-            # try:
-            response = api.geocode(geo.address.text)
-            # except Exception as e:
-            #     # geo.status = geo.ERROR
-            #     # geo.save()
-            #     print('{}: {}'.format(type(e).__name__, e))
-            #     continue
-            geo.latitude = response['latitude']
-            geo.longitude = response['longitude']
-            geo.status = geo.SUCCESS
-            geo.save()
+            try:
+                response = api.geocode(geo.address.text)
+            except ApiError as e:
+                print('{}: {}'.format(type(e).__name__, e))
+                geo.status = geo.ERROR
+            else:
+                geo.latitude = response['latitude']
+                geo.longitude = response['longitude']
+                geo.status = geo.SUCCESS
+            finally:
+                geo.save()

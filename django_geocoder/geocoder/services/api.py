@@ -5,25 +5,15 @@ from geocoder.models import Provider
 
 
 class ApiError(Exception):
-    def __init__(self, *args, **kwargs):
-        self._response = kwargs.pop('response', None)
-        super(*args, **kwargs)
+    """Base class for exceptions in this module."""
 
 
 class ResponseNotJsonError(ApiError):
-    def __str__(self):
-        return 'Response does not contain JSON: {}'.format(
-            self._response.text)
+    """Response does not contain JSON"""
 
 
 class UnexpectedJsonStructure(ApiError):
-    def __init__(self, *args, **kwargs):
-        self._key_error = kwargs.pop('key_error', None)
-        super(*args, **kwargs)
-
-    def __str__(self):
-        return 'Cannot find key "{}" in JSON: {}'.format(
-            self._key_error, self._response.json())
+    """Cannot find given key in JSON"""
 
 
 class Api:
@@ -33,15 +23,29 @@ class Api:
     def geocode(self, address):
         params = self._build_params(address)
         response = requests.get(self._url, params=params)
-        response.raise_for_status()
         try:
+            response.raise_for_status()
             json_data = response.json()
             geo_data = self._extract_from_json(json_data)
+        except requests.HTTPError:
+            raise ApiError(
+                'HTTP error',
+                {'params': params,
+                 'response': response.text,
+                 'status': response.status_code})
         except json.decoder.JSONDecodeError:
-            raise ResponseNotJsonError(response=response)
+            raise ResponseNotJsonError(
+                'Response does not contain JSON',
+                {'params': params,
+                 'response': response.text})
         except KeyError as e:
-            raise UnexpectedJsonStructure(response=response, key_error=e)
+            raise UnexpectedJsonStructure(
+                'Cannot find given key in JSON',
+                {'params': params,
+                 'response': response.text,
+                 'key': e.args[0]})
         return geo_data
+
     @staticmethod
     def withProvider(provider):
         if provider.vendor == Provider.YANDEX:
@@ -58,8 +62,8 @@ class YandexApi(Api):
 
     def _build_params(self, address):
         params = { 'geocode': address, 'format': 'json' }
-        # if self._key:
-        #     params['key'] = self._key
+        if self._key:
+            params['key'] = self._key
         return params
 
     def _extract_from_json(self, json_data):
@@ -80,7 +84,6 @@ class GoogleApi(Api):
 
     def _extract_from_json(self, json_data):
         location = json_data['results']['geometry']['location']
-
         return { 'latitude': location['lat'], 'longitude': location['lng'] }
 
 
@@ -92,5 +95,4 @@ class OpenStreetMapApi(Api):
 
     def _extract_from_json(self, json_data):
         result = json_data[0]
-
         return { 'latitude': result['lat'], 'longitude': result['lon'] }
