@@ -38,7 +38,7 @@ class Api:
                 'Response does not contain JSON',
                 {'params': params,
                  'response': response.text})
-        except (KeyError, TypeError) as e:
+        except (KeyError, TypeError, IndexError) as e:
             raise UnexpectedJsonStructure(
                 'Cannot find given key in JSON',
                 {'params': params,
@@ -63,7 +63,7 @@ class YandexApi(Api):
     def _build_params(self, address):
         params = { 'geocode': address, 'format': 'json' }
         if self._key:
-            params['key'] = self._key
+            params['apikey'] = self._key
         return params
 
     def _extract_from_json(self, json_data):
