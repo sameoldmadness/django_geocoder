@@ -27,16 +27,17 @@ Run server
 
 App will be available at `http://localhost:8000/admin`.
 
-TODO
+Usage
 ----
 
-- catch api errors (and record failed responses)
-- set up cron job
-- exclude exausted providers
-- test yandex and google keys
-- squash migrations
-- remove gui restrictions
-- add columns settings
-- smth wrong with oss coords
-- save full text string
-- RecursionError at /admin/geocoder/address/14/change/
+[Video](https://raw.githubusercontent.com/sameoldmadness/django_geocoder/master/media/usage_example.mov)
+
+Cron setup
+----
+
+Execute geocode command every 15 minutes.
+
+```
+# m h  dom mon dow   command
+*/15 * * * * python <path-to-geocoder>/manage.py process_requests
+```
