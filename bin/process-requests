@@ -1,0 +1,4 @@
+#! /usr/bin/python
+from django.core import management
+
+management.call_command('process_requests')
